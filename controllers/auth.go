@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"rest-api-jwt/models"
+	"rest-api-jwt/utils/token"
 )
 
 type RegisterInput struct {
@@ -25,6 +26,7 @@ func Register(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Registration Success"})
@@ -46,10 +48,27 @@ func Login(c *gin.Context) {
 	u.Username = input.Username
 	u.Password = input.Password
 
-	token, err := models.LoginCheck(u.Username, u.Password)
+	userToken, err := models.LoginCheck(u.Username, u.Password)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Username or Password."})
 	}
-	c.JSON(http.StatusOK, gin.H{"Token": token})
+	c.JSON(http.StatusOK, gin.H{"Token": userToken})
+}
+
+func CurrentUser(c *gin.Context) {
+	user_id, err := token.ExtractTokenID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	u, err := models.GetUserById(user_id)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Success", "data": u})
 }
