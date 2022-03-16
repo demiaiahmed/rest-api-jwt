@@ -28,6 +28,9 @@ func ConnectDatabase() {
 
 	DB, err = gorm.Open(DbDriver, DBURL)
 
+	sqlDB := DB.DB()
+	defer sqlDB.Close()
+
 	if err != nil {
 		fmt.Println("Cannot Connect to Database", DbDriver)
 		log.Fatal("Connection Error ", err)
